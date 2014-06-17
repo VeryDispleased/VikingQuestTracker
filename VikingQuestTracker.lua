@@ -1,8 +1,3 @@
------------------------------------------------------------------------------------------------
--- Client Lua Script for VikingQuestTracker
--- Copyright (c) NCsoft. All rights reserved
------------------------------------------------------------------------------------------------
-
 require "Window"
 require "QuestLib"
 
@@ -107,7 +102,7 @@ function VikingQuestTracker:OnDocumentReady()
 
 	Apollo.RegisterEventHandler("WindowManagementReady", 					"OnWindowManagementReady", self)
 	Apollo.RegisterEventHandler("WindowManagementUpdate", 					"OnWindowManagementUpdate", self)
-	Apollo.RegisterEventHandler("OptionsUpdated_VikingQuestTracker", 				"OnOptionsUpdated", self)
+	Apollo.RegisterEventHandler("OptionsUpdated_QuestTracker", 				"OnOptionsUpdated", self)
 
 	self.tMinimized =
 	{
@@ -150,7 +145,7 @@ function VikingQuestTracker:OnDocumentReady()
 	Apollo.RegisterEventHandler("ShowResurrectDialog", 						"OnShowResurrectDialog", self)
 
 	Apollo.RegisterTimerHandler("QuestTrackerRedrawTimer", 					"RedrawAll", self)
-	Apollo.RegisterTimerHandler("VikingQuestTracker_EarliestProgBarTimer", 		"OnVikingQuestTracker_EarliestProgBarTimer", self)
+	Apollo.RegisterTimerHandler("QuestTracker_EarliestProgBarTimer", 		"OnQuestTracker_EarliestProgBarTimer", self)
 	Apollo.RegisterTimerHandler("QuestTrackerOrderTimer", 					"OnQuestTrackerOrderTimer", self)
 
 	Apollo.CreateTimer("QuestTrackerOrderTimer", 1, true)
@@ -192,7 +187,7 @@ function VikingQuestTracker:OnDocumentReady()
 end
 
 function VikingQuestTracker:OnWindowManagementReady()
-	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("CRB_VikingQuestTracker")})
+	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("CRB_QuestTracker")})
 end
 
 function VikingQuestTracker:OnWindowManagementUpdate(tSettings)
@@ -1144,13 +1139,13 @@ function VikingQuestTracker:OnQuestObjectiveUpdated(queQuest, nObjective)
 	end
 
 	self.tActiveProgBarQuests[queQuest:GetId()] = os.clock()
-	Apollo.CreateTimer("VikingQuestTracker_EarliestProgBarTimer", knQuestProgBarFadeoutTime, false)
+	Apollo.CreateTimer("QuestTracker_EarliestProgBarTimer", knQuestProgBarFadeoutTime, false)
 	-- GOTCHA: Apollo quirk, if you don't StopTimer before this, only the earliest is caught. So check and refire event in the handler.
 
 	self:OnDestroyQuestObject(queQuest)
 end
 
-function VikingQuestTracker:OnVikingQuestTracker_EarliestProgBarTimer()
+function VikingQuestTracker:OnQuestTracker_EarliestProgBarTimer()
 	-- GOTCHA: Apollo quirk, only the earliest is caught. So check and refire event if applicable.
 	local nComparisonTime = os.clock()
 	local nLowestTime = 9000
@@ -1164,7 +1159,7 @@ function VikingQuestTracker:OnVikingQuestTracker_EarliestProgBarTimer()
 	end
 
 	if nLowestTime ~= 9000 then
-		Apollo.CreateTimer("VikingQuestTracker_EarliestProgBarTimer", nLowestTime, false)
+		Apollo.CreateTimer("QuestTracker_EarliestProgBarTimer", nLowestTime, false)
 	end
 end
 
@@ -1614,7 +1609,7 @@ end
 -- Tutorial anchor request
 ---------------------------------------------------------------------------------------------------
 function VikingQuestTracker:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
-	if eAnchor == GameLib.CodeEnumTutorialAnchor.VikingQuestTracker or eAnchor == GameLib.CodeEnumTutorialAnchor.QuestCommunicatorReceived then
+	if eAnchor == GameLib.CodeEnumTutorialAnchor.QuestTracker or eAnchor == GameLib.CodeEnumTutorialAnchor.QuestCommunicatorReceived then
 
 	local tRect = {}
 	tRect.l, tRect.t, tRect.r, tRect.b = self.wndMain:GetRect()
