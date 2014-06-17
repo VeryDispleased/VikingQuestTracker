@@ -14,18 +14,18 @@ local knChallngeOffset 			= 132
 local kstrPublicEventMarker 	= "Public Event"
 local ktNumbersToLetters		=
 {
-	Apollo.GetString("VikingQuestTracker_ObjectiveA"),
-	Apollo.GetString("VikingQuestTracker_ObjectiveB"),
-	Apollo.GetString("VikingQuestTracker_ObjectiveC"),
-	Apollo.GetString("VikingQuestTracker_ObjectiveD"),
-	Apollo.GetString("VikingQuestTracker_ObjectiveE"),
-	Apollo.GetString("VikingQuestTracker_ObjectiveF"),
-	Apollo.GetString("VikingQuestTracker_ObjectiveG"),
-	Apollo.GetString("VikingQuestTracker_ObjectiveH"),
-	Apollo.GetString("VikingQuestTracker_ObjectiveI"),
-	Apollo.GetString("VikingQuestTracker_ObjectiveJ"),
-	Apollo.GetString("VikingQuestTracker_ObjectiveK"),
-	Apollo.GetString("VikingQuestTracker_ObjectiveL")
+	Apollo.GetString("QuestTracker_ObjectiveA"),
+	Apollo.GetString("QuestTracker_ObjectiveB"),
+	Apollo.GetString("QuestTracker_ObjectiveC"),
+	Apollo.GetString("QuestTracker_ObjectiveD"),
+	Apollo.GetString("QuestTracker_ObjectiveE"),
+	Apollo.GetString("QuestTracker_ObjectiveF"),
+	Apollo.GetString("QuestTracker_ObjectiveG"),
+	Apollo.GetString("QuestTracker_ObjectiveH"),
+	Apollo.GetString("QuestTracker_ObjectiveI"),
+	Apollo.GetString("QuestTracker_ObjectiveJ"),
+	Apollo.GetString("QuestTracker_ObjectiveK"),
+	Apollo.GetString("QuestTracker_ObjectiveL")
 }
 local karPathToString =
 {
@@ -83,10 +83,10 @@ function VikingQuestTracker:new(o)
     o = o or {}
     setmetatable(o, self)
     self.__index = self
-	
+
 	o.tCurentQuestsOrdered = {}
 	o.nCurentQuestsOrderedCount = 0
-	
+
     return o
 end
 
@@ -104,7 +104,7 @@ function VikingQuestTracker:OnDocumentReady()
 	if self.xmlDoc == nil or not self.xmlDoc:IsLoaded() or not g_InterfaceOptionsLoaded or self.wndMain then
 		return
 	end
-	
+
 	Apollo.RegisterEventHandler("WindowManagementReady", 					"OnWindowManagementReady", self)
 	Apollo.RegisterEventHandler("WindowManagementUpdate", 					"OnWindowManagementUpdate", self)
 	Apollo.RegisterEventHandler("OptionsUpdated_VikingQuestTracker", 				"OnOptionsUpdated", self)
@@ -186,7 +186,7 @@ function VikingQuestTracker:OnDocumentReady()
 	self.tTimedEventObjectives			= {}
 	self.tQueuedCommMessages			= {}
 	self.bChallengeVisible				= nil -- TODO: Challenges is firing the toggle event for basically any event that happens regardless of whether or not it toggled. Once this is fixed, we can remove this state storage var.
-	
+
 	self:InitializeWindowMeasuring()
 	self:RedrawAll()
 end
@@ -198,19 +198,19 @@ end
 function VikingQuestTracker:OnWindowManagementUpdate(tSettings)
 	local bOldHasMoved = self.bHasMoved
 	local bOldMoveable = self.bMoveable
-	
+
 	if tSettings and tSettings.wnd and tSettings.wnd == self.wndMain then
 		self.bMoveable = self.wndMain:IsStyleOn("Moveable")
 		self.bHasMoved = tSettings.bHasMoved
-		
+
 		self.wndMain:FindChild("Background"):SetSprite(self.bMoveable and "BK3:UI_BK3_Holo_InsetFlyout" or "")
 		self.wndMain:SetStyle("Sizable", self.bMoveable and self.bHasMoved)
 		self.wndMain:SetStyle("IgnoreMouse", not self.bMoveable)
 	end
-	
+
 	if bOldHasMoved ~= self.bHasMoved then
 		self:RedrawAll()
-		
+
 		if self.bMaximized then
 			self:OnDatachronRestored(self.nDatachronShift)
 		else
@@ -268,7 +268,7 @@ end
 function VikingQuestTracker:OnQuestTrackerOrderTimer()
 	local tOldQuestsOrdered = self.tCurentQuestsOrdered
 	self.tCurentQuestsOrdered = {}
-	
+
 	local bFoundDifference = false
 	local nCount = 1
 	for idxEpisode, epiEpisode in pairs(QuestLib.GetTrackedEpisodes(self.bQuestTrackerByDistance)) do
@@ -280,12 +280,12 @@ function VikingQuestTracker:OnQuestTrackerOrderTimer()
 			nCount = nCount + 1
 		end
 	end
-	
+
 	if bFoundDifference or self.nCurentQuestsOrderedCount ~= nCount then
 		Event_FireGenericEvent("GenericEvent_QuestTrackerRenumbered")
 		self:RequestRedrawAll()
 	end
-	
+
 	self.nCurentQuestsOrderedCount = nCount
 end
 
@@ -313,7 +313,7 @@ function VikingQuestTracker:ResizeEpisodes()
 	end
 
 	local nAlign = self.bHasMoved and 0 or 2
-	
+
 	self.wndQuestTrackerScroll:ArrangeChildrenVert(nAlign, function(a,b)
 		if a:GetName() == "EpisodeGroupItem" and b:GetName() == "EpisodeGroupItem" then
 			return a:GetData() < b:GetData()
@@ -361,9 +361,9 @@ end
 function VikingQuestTracker:RedrawAll()
 	Apollo.StopTimer("QuestTrackerRedrawTimer")
 	self.bRedrawQueued = false
-	
+
 	self:HelperFindAndDestroyQuests()
-	
+
 	if #self.tZombiePublicEvents > 0 then
 		self:DrawPublicEpisodes()
 	elseif #PublicEvent.GetActiveEvents() > 0 then
@@ -375,7 +375,7 @@ function VikingQuestTracker:RedrawAll()
 		self:DestroyAndRedraw()
 		return
 	end
-	
+
 	if not self.bDrawPvPScreenOnly and not self.bDrawDungeonScreenOnly then
 		local wndEpisodeGroup
 
@@ -384,16 +384,16 @@ function VikingQuestTracker:RedrawAll()
 			wndEpisodeGroup = nil
 			if epiEpisode:IsWorldStory() then
 				wndEpisodeGroup = self:FactoryProduce(self.wndQuestTrackerScroll, "EpisodeGroupItem", "1EGWorld")
-				wndEpisodeGroup:FindChild("EpisodeGroupTitle"):SetText(Apollo.GetString("VikingQuestTracker_WorldStory"))
+				wndEpisodeGroup:FindChild("EpisodeGroupTitle"):SetText(Apollo.GetString("QuestTracker_WorldStory"))
 			elseif epiEpisode:IsZoneStory() then
 				wndEpisodeGroup = self:FactoryProduce(self.wndQuestTrackerScroll, "EpisodeGroupItem", "2EGZone")
-				wndEpisodeGroup:FindChild("EpisodeGroupTitle"):SetText(Apollo.GetString("VikingQuestTracker_ZoneStory"))
+				wndEpisodeGroup:FindChild("EpisodeGroupTitle"):SetText(Apollo.GetString("QuestTracker_ZoneStory"))
 			elseif epiEpisode:IsRegionalStory() then
 				wndEpisodeGroup = self:FactoryProduce(self.wndQuestTrackerScroll, "EpisodeGroupItem", "3EGRegional")
-				wndEpisodeGroup:FindChild("EpisodeGroupTitle"):SetText(Apollo.GetString("VikingQuestTracker_RegionalStory"))
+				wndEpisodeGroup:FindChild("EpisodeGroupTitle"):SetText(Apollo.GetString("QuestTracker_RegionalStory"))
 			else -- task
 				local wndTaskGroup = self:FactoryProduce(self.wndQuestTrackerScroll, "EpisodeGroupItem", "4EGTask")
-				wndTaskGroup:FindChild("EpisodeGroupTitle"):SetText(Apollo.GetString("VikingQuestTracker_Tasks"))
+				wndTaskGroup:FindChild("EpisodeGroupTitle"):SetText(Apollo.GetString("QuestTracker_Tasks"))
 
 				self:DrawEpisodeQuests(epiEpisode, wndTaskGroup:FindChild("EpisodeGroupContainer"))
 			end
@@ -420,7 +420,7 @@ function VikingQuestTracker:RedrawAll()
 			wndEpisodeGroup:Destroy()
 		end
 	end
-	
+
 	self:ResizeEpisodes()
 end
 
@@ -476,14 +476,14 @@ end
 
 function VikingQuestTracker:DrawQuest(nIdx, queQuest, wndParent)
 	local wndQuest = self:FactoryProduce(wndParent, "QuestItem", queQuest)
-	
-	-- Quest Title	
+
+	-- Quest Title
 	local strTitle = queQuest:GetTitle()
 	local eQuestState = queQuest:GetState()
 	if eQuestState == Quest.QuestState_Botched then
-		strTitle = string.format("<T Font=\"CRB_InterfaceMedium_B\" TextColor=\"%s\">%s</T>", kstrRed, String_GetWeaselString(Apollo.GetString("VikingQuestTracker_Failed"), strTitle))
+		strTitle = string.format("<T Font=\"CRB_InterfaceMedium_B\" TextColor=\"%s\">%s</T>", kstrRed, String_GetWeaselString(Apollo.GetString("QuestTracker_Failed"), strTitle))
 	elseif eQuestState == Quest.QuestState_Achieved then
-		strTitle = string.format("<T Font=\"CRB_InterfaceMedium_B\" TextColor=\"%s\">%s</T>", kstrGreen,String_GetWeaselString(Apollo.GetString("VikingQuestTracker_Complete"), strTitle))
+		strTitle = string.format("<T Font=\"CRB_InterfaceMedium_B\" TextColor=\"%s\">%s</T>", kstrGreen,String_GetWeaselString(Apollo.GetString("QuestTracker_Complete"), strTitle))
 	elseif (eQuestState == Quest.QuestState_Accepted or eQuestState == Quest.QuestState_Achieved) and queQuest:IsQuestTimed() then
 		strTitle = self:HelperBuildTimedQuestTitle(queQuest)
 		table.insert(self.tTimedQuests, { queQuest = queQuest, wndTitleFrame = wndQuest:FindChild("TitleText") })
@@ -492,10 +492,10 @@ function VikingQuestTracker:DrawQuest(nIdx, queQuest, wndParent)
 		local crLevelConDiff = ktConToColor[queQuest:GetColoredDifficulty() or 0]
 		strTitle = string.format("<T Font=\"CRB_InterfaceMedium\" TextColor=\"%s\">%s </T><T Font=\"CRB_InterfaceMedium\" TextColor=\"%s\">[%s]</T>", strColor, strTitle, crLevelConDiff, queQuest:GetConLevel())
 	end
-	
+
 	wndQuest:FindChild("TitleText"):SetAML(strTitle)
 	wndQuest:FindChild("TitleText"):SetHeightToContentHeight()
-		
+
 	wndQuest:FindChild("QuestOpenLogBtn"):SetData(queQuest)
 	wndQuest:FindChild("QuestCallbackBtn"):SetData(queQuest)
 	wndQuest:FindChild("ControlBackerBtn"):SetData(wndQuest)
@@ -517,12 +517,12 @@ function VikingQuestTracker:DrawQuest(nIdx, queQuest, wndParent)
 		local wndSpellItem = self:FactoryProduce(wndQuest:FindChild("ObjectiveContainer"), "SpellItem", "SpellItem")
 		wndSpellItem:FindChild("SpellItemBtn"):Show(true)
 		wndSpellItem:FindChild("SpellItemBtn"):SetContentId(queQuest) -- GOTCHA: Normally we use the spell id, but here we use the quest object
-		wndSpellItem:FindChild("SpellItemText"):SetText(String_GetWeaselString(Apollo.GetString("VikingQuestTracker_UseQuestAbility"), GameLib.GetKeyBinding("CastObjectiveAbility")))
+		wndSpellItem:FindChild("SpellItemText"):SetText(String_GetWeaselString(Apollo.GetString("QuestTracker_UseQuestAbility"), GameLib.GetKeyBinding("CastObjectiveAbility")))
 	end
 
 	local wndQuestNumber = wndQuest:FindChild("QuestNumber")
 	local wndQuestNumberBackerArt = wndQuest:FindChild("QuestNumberBackerArt")
-	
+
 	-- Conditional drawing
 	wndQuest:FindChild("QuestNumberUpdateHighlight"):Show(self.tActiveProgBarQuests[queQuest:GetId()] ~= nil)
 	wndQuestNumber:SetText(nIdx)
@@ -531,7 +531,7 @@ function VikingQuestTracker:DrawQuest(nIdx, queQuest, wndParent)
 	wndQuestNumberBackerArt:SetBGColor(CColor.new(1,1,1,1))
 	wndQuestNumberBackerArt:SetSprite("sprQT_NumBackerNormal")
 	wndQuest:FindChild("ObjectiveContainer"):Show(not wndQuest:FindChild("MinimizeBtn"):IsChecked())
-	
+
 	-- State depending drawing
 	if wndQuest:FindChild("MinimizeBtn"):IsChecked() then
 		wndQuestNumber:SetTextColor(CColor.new(.5, .5, .5, .8))
@@ -557,7 +557,7 @@ function VikingQuestTracker:DrawQuest(nIdx, queQuest, wndParent)
 			if tObjective.nCompleted < tObjective.nNeeded then
 				local wndObjective = self:FactoryProduce(wndQuest:FindChild("ObjectiveContainer"), "QuestObjectiveItem", idObjective)
 				self:DrawQuestObjective(wndQuest, wndObjective, queQuest, tObjective)
-				
+
 				if queQuest:IsObjectiveTimed(tObjective.nIndex) then
 					table.insert(self.tTimedObjectives, { queQuest = queQuest, tObjective = tObjective, wndObjective = wndObjective })
 				end
@@ -618,12 +618,12 @@ function VikingQuestTracker:DrawPublicEpisodes()
 	wndEpisode:FindChild("EpisodeTitle"):SetData(-1) -- For sorting, will compare vs Quests
 
 	if wndEpisode:FindChild("EpisodeMinimizeBtn") and wndEpisode:FindChild("EpisodeMinimizeBtn"):IsChecked() then
-		wndEpisode:FindChild("EpisodeTitle"):SetText("> " .. Apollo.GetString("VikingQuestTracker_Events"))
+		wndEpisode:FindChild("EpisodeTitle"):SetText("> " .. Apollo.GetString("QuestTracker_Events"))
 		wndEpisode:FindChild("EpisodeTitle"):SetTextColor(ApolloColor.new("8031fcf6"))
 		return
 	end
 
-	wndEpisode:FindChild("EpisodeTitle"):SetText(Apollo.GetString("VikingQuestTracker_Events"))
+	wndEpisode:FindChild("EpisodeTitle"):SetText(Apollo.GetString("QuestTracker_Events"))
 	wndEpisode:FindChild("EpisodeTitle"):SetTextColor(ApolloColor.new("UI_BtnTextHoloNormal"))
 
 	-- Events
@@ -667,11 +667,11 @@ end
 
 function VikingQuestTracker:DrawEvent(wndParent, peEvent, nAlphabetNumber)
 	local wndEvent = self:FactoryProduce(wndParent, "EventItem", peEvent)
-	
+
 	if wndEvent:FindChild("ShowEventStatsBtn"):GetData() and not self.tPublicEventsToRedraw[peEvent:GetName()] then
 		return
 	end
-	
+
 	self.tPublicEventsToRedraw[peEvent:GetName()] = false
 	wndEvent:FindChild("ShowEventStatsBtn"):SetData(peEvent)
 	wndEvent:FindChild("QuestMouseCatcher"):SetData(wndEvent)
@@ -734,14 +734,14 @@ function VikingQuestTracker:DrawZombieEvent(wndParent, tZombieEvent, nAlphabetNu
 	-- Win or Loss formatting here
 	local strTitle = string.format("<T Font=\"CRB_InterfaceMedium_B\">%s</T>", tZombieEvent.peEvent:GetName())
 	if tZombieEvent.eReason == PublicEvent.PublicEventParticipantRemoveReason_CompleteFailure then
-		local strFailed = String_GetWeaselString(Apollo.GetString("VikingQuestTracker_Failed"), strTitle)
+		local strFailed = String_GetWeaselString(Apollo.GetString("QuestTracker_Failed"), strTitle)
 		wndEvent:FindChild("EventLetter"):SetTextColor(ApolloColor.new(kstrRed))
 		wndEvent:FindChild("EventLetterBacker"):SetSprite("sprQT_NumBackerFailedPE")
 		wndEvent:FindChild("QuestCallbackBtn"):ChangeArt("CRB_QuestTrackerSprites:btnQT_QuestFailed")
 		wndEvent:FindChild("TitleText"):SetAML(string.format("<T Font=\"CRB_InterfaceMedium_B\" TextColor=\"%s\">%s</T>", kstrRed, strFailed))
 
 	elseif tZombieEvent.eReason == PublicEvent.PublicEventParticipantRemoveReason_CompleteSuccess then
-		local strComplete = String_GetWeaselString(Apollo.GetString("VikingQuestTracker_Complete"), strTitle)
+		local strComplete = String_GetWeaselString(Apollo.GetString("QuestTracker_Complete"), strTitle)
 		wndEvent:FindChild("EventLetter"):SetTextColor(ApolloColor.new(kstrGreen))
 		wndEvent:FindChild("EventLetterBacker"):SetSprite("sprQT_NumBackerCompletedPE")
 		wndEvent:FindChild("QuestCallbackBtn"):ChangeArt("CRB_QuestTrackerSprites:btnQT_QuestRedeem")
@@ -757,7 +757,7 @@ function VikingQuestTracker:DrawEventObjective(wndObjective, peEvent, idObjectiv
 	if peoObjective:GetTotalTime() > 0 then
 		table.insert(self.tTimedEventObjectives, { peEvent = peEvent, peoObjective = peoObjective, wndObjective = wndObjective })
 	end
-	
+
 	-- Progress Bar
 	if peoObjective:GetObjectiveType() == PublicEventObjective.PublicEventObjectiveType_ContestedArea then
 		local nPercent = peoObjective:GetContestedAreaRatio()
@@ -802,7 +802,7 @@ end
 function VikingQuestTracker:OnResizeEpisodeGroup(wndEpisodeGroup)
 	local nOngoingGroupCount = self.knInitialEpisodeGroupHeight
 	local wndEpisodeGroupContainer = wndEpisodeGroup:FindChild("EpisodeGroupContainer")
-	
+
 	for idx, wndEpisode in pairs(wndEpisodeGroupContainer:GetChildren()) do
 		local strWindowName = wndEpisode:GetName()
 		if strWindowName == "EpisodeItem" then
@@ -811,7 +811,7 @@ function VikingQuestTracker:OnResizeEpisodeGroup(wndEpisodeGroup)
 			nOngoingGroupCount = nOngoingGroupCount + self:OnResizeQuest(wndEpisode)
 		end
 	end
-	
+
 	wndEpisodeGroupContainer:ArrangeChildrenVert(0)
 	local nLeft, nTop, nRight, nBottom = wndEpisodeGroup:GetAnchorOffsets()
 	wndEpisodeGroup:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nOngoingGroupCount)
@@ -821,13 +821,13 @@ function VikingQuestTracker:OnResizeEpisode(wndEpisode)
 	local nOngoingTopCount = self.knInitialEpisodeHeight
 	local wndEpisodeQuestContainer = wndEpisode:FindChild("EpisodeQuestContainer")
 	local bEpisodeMinimizeBtnChecked = wndEpisode:FindChild("EpisodeMinimizeBtn"):IsChecked()
-	
+
 	if not bEpisodeMinimizeBtnChecked then
 		for idx1, wndQuest in pairs(wndEpisodeQuestContainer:GetChildren()) do
 			nOngoingTopCount = nOngoingTopCount + self:OnResizeQuest(wndQuest)
 		end
 	end
-	
+
 	wndEpisodeQuestContainer:ArrangeChildrenVert(0)
 	local nLeft, nTop, nRight, nBottom = wndEpisode:GetAnchorOffsets()
 	wndEpisode:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nOngoingTopCount)
@@ -838,35 +838,35 @@ end
 function VikingQuestTracker:OnResizeQuest(wndQuest)
 	local nQuestTextWidth, nQuestTextHeight = wndQuest:FindChild("TitleText"):SetHeightToContentHeight()
 	local nResult = math.max(self.knInitialQuestControlBackerHeight, nQuestTextHeight + 4) -- for lower g height
-	
+
 	local wndControlBackerBtn = wndQuest:FindChild("ControlBackerBtn")
 	if wndControlBackerBtn then
 		local nLeft, nTop, nRight, nBottom = wndControlBackerBtn:GetAnchorOffsets()
 		wndControlBackerBtn:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nResult)
 	end
-	
+
 	local wndObjectiveContainer = wndQuest:FindChild("ObjectiveContainer")
 	local wndMinimizeBtn = wndQuest:FindChild("MinimizeBtn")
-	
+
 	local nHeaderHeight = nResult
-	
+
 	-- If expanded and valid, make it bigger
 	if wndObjectiveContainer then
 		if not wndMinimizeBtn:IsChecked() then
 			for idx, wndObj in pairs(wndObjectiveContainer:GetChildren()) do
 				nResult = nResult + self:OnResizeQuestObjective(wndObj)
 			end
-			
+
 			local nLeft, nTop, nRight, nBottom = wndObjectiveContainer:GetAnchorOffsets()
 			wndObjectiveContainer:SetAnchorOffsets(nLeft, nHeaderHeight, nRight, nHeaderHeight + wndObjectiveContainer:ArrangeChildrenVert(0))
 		end
-	
+
 		wndObjectiveContainer:Show(not wndMinimizeBtn:IsChecked())
 		wndObjectiveContainer:ArrangeChildrenVert(0)
 	end
-	
+
 	nResult = math.max(nResult, self.knMinHeightEventItem)
-	
+
 	local nLeft, nTop, nRight, nBottom = wndQuest:GetAnchorOffsets()
 	wndQuest:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nResult)
 	return nResult
@@ -874,14 +874,14 @@ end
 
 function VikingQuestTracker:OnResizeQuestObjective(wndObj)
 	local nObjTextHeight = self.knInitialQuestObjectiveHeight
-	
+
 	-- If there's the spell icon is bigger, use that instead
 	if wndObj:FindChild("SpellItemObjectiveBtn") or wndObj:GetName() == "SpellItem" then
 		nObjTextHeight = math.max(nObjTextHeight, self.knInitialSpellItemHeight)
 	end
-	
+
 	local wndQuestObjectiveText = wndObj:FindChild("QuestObjectiveText")
-	
+
 	-- If the text is bigger, use that instead
 	if wndQuestObjectiveText then
 		local nLocalWidth, nLocalHeight = wndQuestObjectiveText:SetHeightToContentHeight()
@@ -893,14 +893,14 @@ function VikingQuestTracker:OnResizeQuestObjective(wndObj)
 			wndQuestObjectiveText:SetAnchorOffsets(nLeft, 9, nRight, nBottom)
 		end
 	end
-	
+
 	-- Also add extra height for Progress Bars
 	if wndObj:FindChild("QuestProgressItem") then
 		nObjTextHeight = nObjTextHeight + wndObj:FindChild("QuestProgressItem"):GetHeight()
 	elseif wndObj:FindChild("PublicProgressItem") then
 		nObjTextHeight = nObjTextHeight + wndObj:FindChild("PublicProgressItem"):GetHeight()
 	end
-	
+
 	local nLeft, nTop, nRight, nBottom = wndObj:GetAnchorOffsets()
 	wndObj:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nObjTextHeight)
 	return nObjTextHeight
@@ -919,7 +919,7 @@ function VikingQuestTracker:OnQuestCloseBtn(wndHandler, wndControl) -- wndHandle
 	else
 		queQuest:ToggleTracked()
 	end
-	
+
 	self:QueueQuestForDestroy(queQuest)
 	self:RedrawAll()
 end
@@ -1142,7 +1142,7 @@ function VikingQuestTracker:OnQuestObjectiveUpdated(queQuest, nObjective)
 	if not queQuest or not queQuest:IsTracked() or queQuest:ObjectiveIsVisible(nObjective) == false then
 		return
 	end
-	
+
 	self.tActiveProgBarQuests[queQuest:GetId()] = os.clock()
 	Apollo.CreateTimer("VikingQuestTracker_EarliestProgBarTimer", knQuestProgBarFadeoutTime, false)
 	-- GOTCHA: Apollo quirk, if you don't StopTimer before this, only the earliest is caught. So check and refire event in the handler.
@@ -1176,33 +1176,33 @@ end
 
 function VikingQuestTracker:OnDatachronRestored(nDatachronShift)
 	self.nDatachronShift = nDatachronShift
-	
+
 	if not self.wndMain then
 		return
 	end
 
 	self.bMaximized = true
-	
+
 	if not self.bHasMoved then
 		self.wndMain:SetAnchorOffsets(self.nLeft, self.nTop, self.nRight, self.nBottom - nDatachronShift)
 	end
-	
+
 	self:RedrawAll()
 end
 
 function VikingQuestTracker:OnDatachronMinimized(nDatachronShift)
 	self.nDatachronShift = nDatachronShift
-	
+
 	if not self.wndMain then
 		return
 	end
 
 	self.bMaximized = false
-	
+
 	if not self.bHasMoved then
 		self.wndMain:SetAnchorOffsets(self.nLeft, self.nTop, self.nRight, self.nBottom)
 	end
-	
+
 	self:RedrawAll()
 end
 
@@ -1214,11 +1214,11 @@ function VikingQuestTracker:OnGenericEvent_ChallengeTrackerToggled(bVisible)
 	self.bChallengeVisible = bVisible
 	local nTopOffset =  bVisible and self.nTop+knChallngeOffset or self.nTop
 	local nBottomOffset = self.bMaximized and self.nBottom - self.nDatachronShift or self.nBottom
-	
+
 	if not self.bHasMoved then
 		self.wndMain:SetAnchorOffsets(self.nLeft, nTopOffset, self.nRight, nBottomOffset)
 	end
-	
+
 	self:RedrawAll()
 end
 
@@ -1277,9 +1277,9 @@ end
 
 function VikingQuestTracker:HelperShowQuestCallbackBtn(wndQuest, queQuest, strNumberBackerArt, strCallbackBtnArt)
 	wndQuest:FindChild("QuestNumberBackerArt"):SetSprite(strNumberBackerArt)
-	
+
 	local tContactInfo = queQuest:GetContactInfo()
-	
+
 	if not queQuest:IsCommunicatorReceived() or queQuest:IsCommunicatorReceivedFromRec() then
 		if not tContactInfo then
 			self.tQueuedCommMessages[queQuest:GetId()] = {wndQuest = wndQuest, queQuest = queQuest, strNumberBackerArt = strNumberBackerArt, strCallbackBtnArt = strCallbackBtnArt}
@@ -1288,12 +1288,12 @@ function VikingQuestTracker:HelperShowQuestCallbackBtn(wndQuest, queQuest, strNu
 			self.tQueuedCommMessages[queQuest:GetId()] = nil
 		end
 	end
-	
+
 	if not tContactInfo or not tContactInfo.strName or string.len(tContactInfo.strName) <= 0 then
 		return
 	end
 
-	local strName = String_GetWeaselString(Apollo.GetString("VikingQuestTracker_ContactName"), tContactInfo.strName)
+	local strName = String_GetWeaselString(Apollo.GetString("QuestTracker_ContactName"), tContactInfo.strName)
 	wndQuest:FindChild("QuestCompletedBacker"):Show(true)
 	wndQuest:FindChild("QuestCallbackBtn"):ChangeArt(strCallbackBtnArt)
 	wndQuest:FindChild("QuestCallbackBtn"):Enable(not self.bPlayerIsDead)
@@ -1304,7 +1304,7 @@ function VikingQuestTracker:HelperBuildTimedQuestTitle(queQuest)
 	local strTitle = queQuest:GetTitle()
 	strTitle = string.format("<T Font=\"CRB_InterfaceMedium\" TextColor=\"%s\">%s</T>", kstrLightGrey, strTitle)
 	strTitle = self:HelperPrefixTimeString(math.max(0, math.floor(queQuest:GetQuestTimeRemaining() / 1000)), strTitle)
-	
+
 	return strTitle
 end
 
@@ -1333,18 +1333,18 @@ function VikingQuestTracker:BuildObjectiveTitleString(queQuest, tObjective, bIsT
 		local strPrefix = ""
 		if tObjective and not tObjective.bIsRequired then
 			strPrefix = string.format("<T Font=\"CRB_InterfaceMedium\">%s</T>", Apollo.GetString("QuestLog_Optional"))
-			strResult = String_GetWeaselString(Apollo.GetString("VikingQuestTracker_BuildText"), strPrefix, strResult)
+			strResult = String_GetWeaselString(Apollo.GetString("QuestTracker_BuildText"), strPrefix, strResult)
 		end
 
 		-- Use Percent if Progress Bar
 		if tObjective.nNeeded > 1 and queQuest:DisplayObjectiveProgressBar(tObjective.nIndex) then
 			local strColor = self.tActiveProgBarQuests[queQuest:GetId()] and kstrHighlight or "ffffffff"
-			local strPercentComplete = String_GetWeaselString(Apollo.GetString("VikingQuestTracker_PercentComplete"), tObjective.nCompleted)
+			local strPercentComplete = String_GetWeaselString(Apollo.GetString("QuestTracker_PercentComplete"), tObjective.nCompleted)
 			strPrefix = string.format("<T Font=\"CRB_InterfaceMedium_B\" TextColor=\"%s\">%s</T>", strColor, strPercentComplete)
-			strResult = String_GetWeaselString(Apollo.GetString("VikingQuestTracker_BuildText"), strPrefix, strResult)
+			strResult = String_GetWeaselString(Apollo.GetString("QuestTracker_BuildText"), strPrefix, strResult)
 		elseif tObjective.nNeeded > 1 then
-			strPrefix = string.format("<T Font=\"CRB_InterfaceMedium_B\">%s</T>", String_GetWeaselString(Apollo.GetString("VikingQuestTracker_ValueComplete"), tObjective.nCompleted, tObjective.nNeeded))
-			strResult = String_GetWeaselString(Apollo.GetString("VikingQuestTracker_BuildText"), strPrefix, strResult)
+			strPrefix = string.format("<T Font=\"CRB_InterfaceMedium_B\">%s</T>", String_GetWeaselString(Apollo.GetString("QuestTracker_ValueComplete"), tObjective.nCompleted, tObjective.nNeeded))
+			strResult = String_GetWeaselString(Apollo.GetString("QuestTracker_BuildText"), strPrefix, strResult)
 		end
 	end
 
@@ -1376,28 +1376,28 @@ function VikingQuestTracker:BuildEventObjectiveTitleString(queQuest, peoObjectiv
 		-- Prefix Brackets
 		local strPrefix = ""
 		if nNeeded == 0 and (eType == PublicEventObjective.PublicEventObjectiveType_Exterminate or eType == PublicEventObjective.PublicEventObjectiveType_DefendObjectiveUnits) then
-			strPrefix = string.format("<T Font=\"CRB_InterfaceMedium_B\">%s </T>", String_GetWeaselString(Apollo.GetString("VikingQuestTracker_Remaining"), nCompleted))
+			strPrefix = string.format("<T Font=\"CRB_InterfaceMedium_B\">%s </T>", String_GetWeaselString(Apollo.GetString("QuestTracker_Remaining"), nCompleted))
 		elseif eType == PublicEventObjective.PublicEventObjectiveType_DefendObjectiveUnits and not peoObjective:ShowPercent() and not peoObjective:ShowHealthBar() then
-			strPrefix = string.format("<T Font=\"CRB_InterfaceMedium_B\">%s </T>", String_GetWeaselString(Apollo.GetString("VikingQuestTracker_Remaining"), (nCompleted - nNeeded + 1)))
+			strPrefix = string.format("<T Font=\"CRB_InterfaceMedium_B\">%s </T>", String_GetWeaselString(Apollo.GetString("QuestTracker_Remaining"), (nCompleted - nNeeded + 1)))
 		elseif eType == PublicEventObjective.PublicEventObjectiveType_Turnstile then
-			strPrefix = string.format("<T Font=\"CRB_InterfaceMedium_B\">%s </T>", String_GetWeaselString(Apollo.GetString("VikingQuestTracker_WaitingForMore"), math.abs(nCompleted - nNeeded)))
+			strPrefix = string.format("<T Font=\"CRB_InterfaceMedium_B\">%s </T>", String_GetWeaselString(Apollo.GetString("QuestTracker_WaitingForMore"), math.abs(nCompleted - nNeeded)))
 		elseif eType == PublicEventObjective.PublicEventObjectiveType_ParticipantsInTriggerVolume then
-			strPrefix = string.format("<T Font=\"CRB_InterfaceMedium_B\">%s </T>",  String_GetWeaselString(Apollo.GetString("VikingQuestTracker_WaitingForMore"), math.abs(nCompleted - nNeeded)))
+			strPrefix = string.format("<T Font=\"CRB_InterfaceMedium_B\">%s </T>",  String_GetWeaselString(Apollo.GetString("QuestTracker_WaitingForMore"), math.abs(nCompleted - nNeeded)))
 		elseif eType == PublicEventObjective.PublicEventObjectiveType_TimedWin then
 			-- Do Nothing
 		elseif nNeeded > 1 and not peoObjective:ShowPercent() and not peoObjective:ShowHealthBar() then
-			strPrefix = string.format("<T Font=\"CRB_InterfaceMedium_B\">%s </T>", String_GetWeaselString(Apollo.GetString("VikingQuestTracker_ValueComplete"), nCompleted, nNeeded))
+			strPrefix = string.format("<T Font=\"CRB_InterfaceMedium_B\">%s </T>", String_GetWeaselString(Apollo.GetString("QuestTracker_ValueComplete"), nCompleted, nNeeded))
 		end
 
 		if strPrefix ~= "" then
-			strResult = String_GetWeaselString(Apollo.GetString("VikingQuestTracker_BuildText"), strPrefix, strResult)
+			strResult = String_GetWeaselString(Apollo.GetString("QuestTracker_BuildText"), strPrefix, strResult)
 			strPrefix = ""
 		end
 
 		-- Prefix Time
 		if peoObjective:IsBusy() then
-			strPrefix = string.format("<T Font=\"CRB_InterfaceMedium_B\" TextColor=\"%s\">%s </T>", kstrYellow, Apollo.GetString("VikingQuestTracker_Paused"))
-			strResult = String_GetWeaselString(Apollo.GetString("VikingQuestTracker_BuildText"), strPrefix, strResult)
+			strPrefix = string.format("<T Font=\"CRB_InterfaceMedium_B\" TextColor=\"%s\">%s </T>", kstrYellow, Apollo.GetString("QuestTracker_Paused"))
+			strResult = String_GetWeaselString(Apollo.GetString("QuestTracker_BuildText"), strPrefix, strResult)
 			strPrefix = ""
 		elseif peoObjective:GetTotalTime() > 0 then
 			local strColorOverride = nil
@@ -1411,13 +1411,13 @@ function VikingQuestTracker:BuildEventObjectiveTitleString(queQuest, peoObjectiv
 		if eCategory == PublicEventObjective.PublicEventObjectiveCategory_PlayerPath then
 			strPrefix = string.format("<T Font=\"CRB_InterfaceMedium_B\">%s </T>", String_GetWeaselString(Apollo.GetString("CRB_ProgressSimple"), self.strPlayerPath or Apollo.GetString("CRB_Path")))
 		elseif eCategory == PublicEventObjective.PublicEventObjectiveCategory_Optional then
-			strPrefix = string.format("<T Font=\"CRB_InterfaceMedium_B\">%s </T>", Apollo.GetString("VikingQuestTracker_OptionalTag"))
+			strPrefix = string.format("<T Font=\"CRB_InterfaceMedium_B\">%s </T>", Apollo.GetString("QuestTracker_OptionalTag"))
 		elseif eCategory == PublicEventObjective.PublicEventObjectiveCategory_Challenge then
-			strPrefix = string.format("<T Font=\"CRB_InterfaceMedium_B\">%s </T>", Apollo.GetString("VikingQuestTracker_ChallengeTag"))
+			strPrefix = string.format("<T Font=\"CRB_InterfaceMedium_B\">%s </T>", Apollo.GetString("QuestTracker_ChallengeTag"))
 		end
 
 		if strPrefix ~= "" then
-			strResult = String_GetWeaselString(Apollo.GetString("VikingQuestTracker_BuildText"), strPrefix, strResult)
+			strResult = String_GetWeaselString(Apollo.GetString("QuestTracker_BuildText"), strPrefix, strResult)
 		end
 	end
 	return strResult
@@ -1516,14 +1516,14 @@ function VikingQuestTracker:HelperPrefixTimeString(fTime, strAppend, strColorOve
 		strColor = kstrRed
 	end
 	local strPrefix = string.format("<T Font=\"CRB_InterfaceMedium_B\" TextColor=\"%s\">(%d:%.02d)</T>", strColor, fMinutes, fSeconds)
-	return String_GetWeaselString(Apollo.GetString("VikingQuestTracker_BuildText"), strPrefix, strAppend)
+	return String_GetWeaselString(Apollo.GetString("QuestTracker_BuildText"), strPrefix, strAppend)
 end
 
 function VikingQuestTracker:HelperFindAndDestroyQuests()
 	if not #self.tQuestsQueuedForDestroy then
 		return
 	end
-		
+
 	for idx1, wndEpGroup in pairs(self.wndQuestTrackerScroll:GetChildren()) do
 		if wndEpGroup:GetName() == "EpisodeGroupItem" then
 			for idx2, wndEp in pairs(wndEpGroup:FindChild("EpisodeGroupContainer"):GetChildren()) do
@@ -1532,41 +1532,41 @@ function VikingQuestTracker:HelperFindAndDestroyQuests()
 						local wndQuest = wndEp:FindChild("EpisodeQuestContainer"):FindChildByUserData(queQuest)
 						if wndQuest then
 							wndQuest:Destroy()
-	
+
 							if wndEp:GetData() ~= kstrPublicEventMarker and next(wndEp:GetData():GetTrackedQuests()) == nil then
 								wndEp:Destroy()
 							end
-	
+
 							if next(wndEpGroup:FindChild("EpisodeGroupContainer"):GetChildren()) == nil then
 								wndEpGroup:Destroy()
 							end
-	
+
 							table.remove(self.tQuestsQueuedForDestroy, key)
 							if #self.tQuestsQueuedForDestroy == 0 then
 								return
 							end
-							
+
 							self:OnQuestDestroyed(queQuest)
 						end
 					elseif wndEp:GetName() == "QuestItem" and wndEp:GetData() == queQuest then
 						wndEp:Destroy()
-	
+
 						if next(wndEpGroup:FindChild("EpisodeGroupContainer"):GetChildren()) == nil then
 							wndEpGroup:Destroy()
 						end
-	
+
 						table.remove(self.tQuestsQueuedForDestroy, key)
 						if #self.tQuestsQueuedForDestroy == 0 then
 							return
 						end
-						
+
 						self:OnQuestDestroyed(queQuest)
 					end
 				end
 			end
 		end
 	end
-	
+
 	-- anything left in this list doesn't exist anymore
 	self.tQuestsQueuedForDestroy = {}
 end
@@ -1577,13 +1577,13 @@ function VikingQuestTracker:OnQuestDestroyed(queQuest)
 			table.remove(self.tTimedQuests, index)
 		end
 	end
-	
+
 	for index, tObjectiveInfo in pairs(self.tTimedObjectives) do
 		if tObjectiveInfo.queQuest == queQuest then
 			table.remove(self.tTimedObjectives, index)
 		end
 	end
-	
+
 	self.tQueuedCommMessages[queQuest:GetId()] = nil
 end
 
@@ -1593,7 +1593,7 @@ function VikingQuestTracker:OnEventDestroyed(peEvent)
 			table.remove(self.tTimedEvents, index)
 		end
 	end
-	
+
 	for index, tEventObjectiveInfo in pairs(self.tTimedEventObjectives) do
 		if tEventObjectiveInfo.peEvent == peEvent then
 			table.remove(self.tTimedEventObjectives, index)
